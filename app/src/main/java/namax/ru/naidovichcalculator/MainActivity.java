@@ -15,7 +15,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,7 +32,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int numOfDig = 5;       //the number of digits after point
     private int leftBraceCount = 0;
     int id = 0;
-    TableLayout scrollLay;
+    LinearLayout scrollLay;
 
     PopupMenu popupMenu; //It is for decimal places
 
@@ -96,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         round.setOnClickListener(this);
 
 
-        scrollLay = (TableLayout) findViewById(R.id.tableLayInScroll);
+        scrollLay = (LinearLayout) findViewById(R.id.tableLayInScroll);
 
         popupMenu = new PopupMenu(this, round);
         popupMenu.inflate(R.menu.menu_round);
@@ -263,10 +265,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         String s = calculate();
         String lastSymbol = s.substring(s.length() - 1);
         if (!lastSymbol.matches("[0-9]")) return;
+        button.setBackgroundResource(R.drawable.button);
         button.setText(s);
         button.setId(id);
-//            button.setBackgroundResource(R.drawable.button); //глючит
-
         TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(1,0,1,0);
         button.setTextColor(getResources().getColor(R.color.textColor));
@@ -358,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             scrollLay.removeView(scrollLay.findViewById(DELETE_BUTTON));
         }
         return super.onContextItemSelected(item);
-    }
+    } //здесь удаляем элемент из списка кнопок
 
     private void showPopupMenu() {
 
