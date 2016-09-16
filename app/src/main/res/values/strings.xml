@@ -4,7 +4,7 @@
     <string name="add">+</string>
     <string name="equal">=</string>
     <string name="zero">0</string>
-    <string name="clear">Clear</string>
+    <string name="clear">C</string>
     <string name="sub">-</string>
     <string name="three">3</string>
     <string name="two">2</string>
@@ -22,10 +22,12 @@
     <string name="divisionZero">Division by ZERO</string>
     <string name="Save">Save</string>
     <string name="tip">Press SAVE button</string>
-    <string name="clearList">Clear list</string>
+    <string name="clearList">C list</string>
     <string name="round">round</string>
     <string name="plus_minus">+/-</string>
     <string name="left_brace">(</string>
     <string name="right_brace">)</string>
     <string name="something_wrong">something is wrong</string>
+    <string name="action_clearList">Clear button\'s list</string>
+    <string name="action_round">Decimal places</string>
 </resources>

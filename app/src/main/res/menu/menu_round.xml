@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/menu0decP"
+            android:title="0"
+            android:orderInCategory="1"
+
+            />
+
+        <item android:id="@+id/menu1decP"
+            android:title="0.0"
+            android:orderInCategory="2"
+
+             />
+
+        <item
+            android:id="@+id/menu2decP"
+            android:title="0.00"
+            android:orderInCategory="3"
+
+            />
+        <item
+            android:id="@+id/menu5decP"
+            android:title="0.00000"
+            android:orderInCategory="4"
+            android:checked="true"
+
+
+
+            />
+        <item
+            android:id="@+id/menuUnlimdecP"
+            android:title="0.0 + 29E"
+            android:orderInCategory="5"
+
+            />
+    </group>
+00000,00000
+
+
+
+
+
+</menu>

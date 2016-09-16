@@ -98,10 +98,10 @@ public class Calculation {
         {
             switch (op2)
             {
-                case '*': iY = X.multiply(Y); break;
-                case '/': iY = X.divide(Y, round, BigDecimal.ROUND_HALF_UP); break;
-                case '+': iY = X.add(Y); break;
-                case '-': iY = X.subtract(Y); break;
+                case '*': iY = Y.multiply(Z); break;
+                case '/': iY = Y.divide(Z, round, BigDecimal.ROUND_HALF_UP); break;
+                case '+': iY = Y.add(Z); break;
+                case '-': iY = Y.subtract(Z); break;
             }
         }
         iOperationCount = 2;

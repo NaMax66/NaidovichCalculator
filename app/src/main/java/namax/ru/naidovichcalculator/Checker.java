@@ -214,6 +214,4 @@ public class Checker {
             display = display.substring(0, display.length() - 1);
 
     }
-
-
 }

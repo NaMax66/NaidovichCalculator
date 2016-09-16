@@ -6,15 +6,17 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#fff"
-    android:weightSum="1">
+    android:background="#263238"
+    android:weightSum="1"
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start"
-        android:text=""
-        android:id="@+id/expression" />
+    >
+
+    <!--<TextView-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:gravity="start"-->
+        <!--android:text=""-->
+        <!--android:id="@+id/expression" />-->
 
     <EditText
         android:layout_width="match_parent"
@@ -22,23 +24,33 @@
         android:text="@string/display"
         android:id = "@+id/display"
         android:focusable="false"
-        android:longClickable="false"
         android:cursorVisible="false"
-        android:inputType="text"
+        android:longClickable="true"
+        android:textColor="@color/textColor"
+        android:textSize="@dimen/textSize"/>
+        <!--android:inputType="text"-->
 
-        />
+
+
     <LinearLayout android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="center"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_margin="1dp"
+
+        >
         <Button
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-
             android:id = "@+id/seven"
             android:text="@string/seven"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
+
             />
         <Button
             android:layout_weight="1"
@@ -46,6 +58,10 @@
             android:layout_height="match_parent"
             android:id = "@+id/eight"
             android:text="@string/eight"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
         <Button
             android:layout_weight="1"
@@ -53,6 +69,10 @@
             android:layout_height="match_parent"
             android:id = "@+id/nine"
             android:text="@string/nine"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
         <Button
             android:layout_weight="1"
@@ -60,6 +80,10 @@
             android:layout_height="match_parent"
             android:id = "@+id/div"
             android:text="@string/div"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
     </LinearLayout>
@@ -67,13 +91,20 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="center"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_margin="1dp"
+
+        >
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:id = "@+id/four"
             android:text="@string/four"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
         <Button
             android:layout_width="match_parent"
@@ -81,6 +112,10 @@
             android:layout_weight="1"
             android:id = "@+id/five"
             android:text="@string/five"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
         <Button
             android:layout_width="match_parent"
@@ -88,6 +123,10 @@
             android:layout_weight="1"
             android:id = "@+id/six"
             android:text="@string/six"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
         <Button
@@ -96,19 +135,29 @@
             android:layout_height="match_parent"
             android:id = "@+id/mul"
             android:text="@string/mul"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
     </LinearLayout>
     <LinearLayout android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_margin="1dp">
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:id = "@+id/one"
             android:text="@string/one"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
+
             />
         <Button
             android:layout_width="match_parent"
@@ -116,6 +165,10 @@
             android:layout_weight="1"
             android:id = "@+id/two"
             android:text="@string/two"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
         <Button
             android:layout_width="match_parent"
@@ -123,6 +176,10 @@
             android:layout_weight="1"
             android:id = "@+id/three"
             android:text="@string/three"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
         <Button
@@ -131,6 +188,10 @@
             android:layout_weight="1"
             android:id = "@+id/add"
             android:text="@string/add"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
     </LinearLayout>
@@ -138,7 +199,8 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="center"
-        android:gravity="center">
+        android:gravity="center"
+        android:layout_margin="1dp">
 
         <Button
             android:layout_width="match_parent"
@@ -146,6 +208,10 @@
             android:layout_weight="1"
             android:id = "@+id/clear"
             android:text="@string/clear"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
         <Button
@@ -154,6 +220,10 @@
             android:layout_weight="1"
             android:id = "@+id/zero"
             android:text="@string/zero"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
         <Button
@@ -161,7 +231,11 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:id="@+id/dot"
-            android:text="." />
+            android:text="."
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"/>
 
         <Button
             android:layout_width="match_parent"
@@ -169,6 +243,10 @@
             android:layout_weight="1"
             android:id = "@+id/sub"
             android:text="@string/sub"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
     </LinearLayout>
@@ -178,14 +256,19 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="center"
-        android:gravity="center" >
+        android:gravity="center"
+        android:layout_margin="1dp"
+        >
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/clearList"
-            android:id="@+id/clearList" />
+            android:id="@+id/clearList"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"/>
 
         <Button
             android:layout_width="match_parent"
@@ -193,6 +276,9 @@
             android:layout_weight="1"
             android:text="@string/round"
             android:id="@+id/round"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
              />
 
         <Button
@@ -201,6 +287,10 @@
             android:layout_weight="1"
             android:id = "@+id/equal"
             android:text="@string/equal"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"
             />
 
         <Button
@@ -208,7 +298,12 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/Backspace"
-            android:id="@+id/backspace" />
+            android:id="@+id/backspace"
+            android:background="@drawable/button"
+            android:textSize="@dimen/textSize"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            />
 
     </LinearLayout>
 
@@ -217,35 +312,51 @@
         android:layout_gravity="center"
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="60dp">
+        android:layout_height="60dp"
+        android:layout_margin="1dp">
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/Save"
-            android:id="@+id/save" />
+            android:id="@+id/save"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"/>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/plus_minus"
-            android:id="@+id/plus_minus" />
+            android:id="@+id/plus_minus"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"/>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/left_brace"
-            android:id="@+id/left_brace" />
+            android:id="@+id/left_brace"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"/>
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:text="@string/right_brace"
-            android:id="@+id/right_brace" />
+            android:id="@+id/right_brace"
+            android:background="@drawable/button"
+            android:layout_marginRight="1dp"
+            android:layout_marginLeft="1dp"
+            android:textSize="@dimen/textSize"/>
     </LinearLayout>
 
 
