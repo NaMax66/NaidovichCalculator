@@ -1,23 +1,17 @@
 package namax.ru.naidovichcalculator;
 
-import android.support.annotation.Nullable;
-import android.support.annotation.StringDef;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.PopupMenu;
-import android.text.Editable;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
-import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,10 +19,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     static int DELETE_BUTTON = 0;
 
-    TextView expression, tip;
+    TextView resultValue, tip;
     EditText display;
-    String finalExpression;
-    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, equal, clearList, backspace, save, leftBrace, rightBrace, round;
+    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, backspace, save, leftBrace, rightBrace, round, equal;
     int numOfDig = 5;       //the number of digits after point
     private int leftBraceCount = 0;
     int id = 0;
@@ -60,17 +53,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         div = (Button) findViewById(R.id.div);
         leftBrace = (Button) findViewById(R.id.left_brace);
         rightBrace = (Button) findViewById(R.id.right_brace);
-        round = (Button) findViewById(R.id.round);
-
 
         clear = (Button) findViewById(R.id.clear);
-        equal = (Button) findViewById(R.id.equal);
-        clearList = (Button) findViewById(R.id.clearList);
         backspace = (Button) findViewById(R.id.backspace);
         save = (Button) findViewById(R.id.save);
+        equal = (Button) findViewById(R.id.equal);
 
         display = (EditText) findViewById(R.id.display);
-//        expression = (TextView) findViewById(R.id.expression);
+        resultValue = (TextView) findViewById(R.id.resultValue);
         tip = (TextView) findViewById(R.id.tip);
 
         one.setOnClickListener(this);
@@ -88,20 +78,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         sub.setOnClickListener(this);
         mul.setOnClickListener(this);
         div.setOnClickListener(this);
-        equal.setOnClickListener(this);
         backspace.setOnClickListener(this);
         leftBrace.setOnClickListener(this);
         rightBrace.setOnClickListener(this);
         save.setOnClickListener(this);
         clear.setOnClickListener(this);
-        clearList.setOnClickListener(this);
-        round.setOnClickListener(this);
+        equal.setOnClickListener(this);
 
 
         scrollLay = (LinearLayout) findViewById(R.id.tableLayInScroll);
 
         popupMenu = new PopupMenu(this, round);
         popupMenu.inflate(R.menu.menu_round);
+
+
     }
 
     @Override
@@ -208,12 +198,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 deleteLastSymbol();
                 break;
 
-            case R.id.equal:
-                String s = calculate();
-
-                display.setText(s);
-                break;
-
             case R.id.clear:
                 display.setText("");
                 leftBraceCount = 0;
@@ -223,15 +207,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 createNewButton();
                 break;
 
-            case R.id.clearList:
-                scrollLay.removeAllViews();
-                id = 0;
-                break;
-
-            case R.id.round:
-                setDecimalPlaces();
-                break;
+            case R.id.equal:
+               String s = calculate();
+               display.setText(s);
+               leftBraceCount = 0;
+               break;
         }
+
+        resultValue.setText("= " + calculate());
+
     }
 
     private String calculate() {
@@ -239,13 +223,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Calculation calculation = new Calculation(numOfDig);
         String resultText = display.getText().toString();
 
+        if (leftBraceCount != 0) //чтобы вычисления проходили корректно объекту типа Calculation нужно одинаковое колличество левых и правых скобок
+        {
+            for (int i = 0; i < leftBraceCount; i++)
+            {
+                resultText += ")";
+            }
+        }
+
         String s = "";
         try {
             s = (calculation.calc(resultText).toString()); // вычисляем и складываем в s
         }
         catch (Exception e)
         {
-            s = "error"; //если не получилось - сразу выводим на экран
+            //если не получилось - ничего не делаем
+        }
+
+        if (!s.equals(""))
+        {
+            String lastSymbol = s.substring(s.length() - 1);
+            if (s.contains("."))
+            {
+                if (lastSymbol.equals("0")) {
+
+
+                    do {
+                        s = s.substring(0, s.length() - 1);
+                        lastSymbol = s.substring(s.length() - 1);
+                    } while (lastSymbol.equals("0"));
+                }
+            }
+
+            if (lastSymbol.equals(".")) s = s.substring(0, s.length() - 1);
+
         }
 
         return s;
@@ -256,36 +267,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         showPopupMenu();
 
     } // выставляем колличество знаков после запятой. Нужно переместить в выпадающее меню
-
-    private void createNewButton() {
-
-        if  (display.getText().toString().equals("")) return;
-
-        Button button = new Button(this);
-        String s = calculate();
-        String lastSymbol = s.substring(s.length() - 1);
-        if (!lastSymbol.matches("[0-9]")) return;
-        button.setBackgroundResource(R.drawable.button);
-        button.setText(s);
-        button.setId(id);
-        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        layoutParams.setMargins(1,0,1,0);
-        button.setTextColor(getResources().getColor(R.color.textColor));
-        scrollLay.addView(button, 0, layoutParams);
-        makeNewButtonClickable(button);
-        registerForContextMenu(button);
-
-        if (id == 0) {
-
-            tip.setVisibility(View.GONE);       //скрываем надпись в спике кнопок
-            id++;
-        }
-        else {
-
-            id++;
-        }
-
-    } //тут создаем новую кнопку, есть проблемы с добавлением текстуры
 
     private void checkAndAdd(CharSequence a) {
         String s = display.getText().toString();
@@ -322,6 +303,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (s.equals("")) leftBraceCount = 0;
     } //для бекспейса
 
+    private void createNewButton() {
+
+        if  (display.getText().toString().equals("")) return;
+
+        Button button = new Button(this);
+        String s = calculate();
+        String lastSymbol = s.substring(s.length() - 1);
+        if (!lastSymbol.matches("[0-9]")) return;
+        button.setBackgroundResource(R.drawable.button);
+        button.setText(s);
+        button.setId(id);
+        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(1,0,1,0);
+        button.setTextColor(getResources().getColor(R.color.mainColor));
+        scrollLay.addView(button, 0, layoutParams);
+        makeNewButtonClickable(button);
+        registerForContextMenu(button);
+
+        if (id == 0) {
+
+            tip.setVisibility(View.GONE);       //скрываем надпись в спике кнопок
+            id++;
+        }
+        else {
+
+            id++;
+        }
+
+    }  // создаем новую кнопку
+
     private void makeNewButtonClickable(final Button button) {
 
 
@@ -331,14 +342,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
 
                 String s = display.getText().toString();
-                if (s.substring(s.length() - 1).matches("[0-9]")) {
+                String lastSymbol = "";
+
+                if (s.length() == 0)
+                {
+                    s += button.getText().toString();
+                    display.setText(s);
+                    resultValue.setText("= " + calculate());
+                    return;
+                }
+
+                else
+
+                    lastSymbol = s.substring(s.length() - 1);
+
+                if (lastSymbol.matches("[0-9]")) {
                     s += "+" + button.getText().toString();
-                } else
+                }
+
+                else if (lastSymbol.equals(".")) {
+
+                    s = s.substring(0, s.length() - 1);
+                    s += "+" + button.getText().toString();
+                }
+
+                else
                 {
                     s += button.getText().toString();
                 }
-                display.setText(s);
 
+                display.setText(s);
+                resultValue.setText("= " + calculate());
             }
         });
 
