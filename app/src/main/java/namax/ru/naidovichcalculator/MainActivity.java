@@ -9,19 +9,24 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
-    static int DELETE_BUTTON = 0;
+    HorizontalScrollView DispHsv, ResultHsv;
 
-    TextView resultValue, tip;
-    EditText display;
-    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, backspace, save, leftBrace, rightBrace, round, equal;
+    static int DELETE_BUTTON = 0;
+    static int SMALL_LENGTH = 15;
+    static int MIDDLE_LENGTH = 22;
+
+    TextView resultValue, tip, display;
+    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, save, leftBrace, rightBrace, round, equal;
+    RelativeLayout backspace;
     int numOfDig = 5;       //the number of digits after point
     private int leftBraceCount = 0;
     int id = 0;
@@ -29,13 +34,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     PopupMenu popupMenu; //It is for decimal places
 
+    float textSize;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        getSupportActionBar().hide();
-
         one = (Button) findViewById(R.id.one);
         two = (Button) findViewById(R.id.two);
         three = (Button) findViewById(R.id.three);
@@ -55,11 +59,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rightBrace = (Button) findViewById(R.id.right_brace);
 
         clear = (Button) findViewById(R.id.clear);
-        backspace = (Button) findViewById(R.id.backspace);
+
+        backspace = (RelativeLayout) findViewById(R.id.backspace);
+
         save = (Button) findViewById(R.id.save);
         equal = (Button) findViewById(R.id.equal);
 
-        display = (EditText) findViewById(R.id.display);
+        display = (TextView) findViewById(R.id.display);
         resultValue = (TextView) findViewById(R.id.resultValue);
         tip = (TextView) findViewById(R.id.tip);
 
@@ -85,13 +91,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         clear.setOnClickListener(this);
         equal.setOnClickListener(this);
 
-
-        scrollLay = (LinearLayout) findViewById(R.id.tableLayInScroll);
+        scrollLay = (LinearLayout) findViewById(R.id.scrolling_layout);
 
         popupMenu = new PopupMenu(this, round);
         popupMenu.inflate(R.menu.menu_round);
 
+        DispHsv = (HorizontalScrollView) findViewById(R.id.disp_hor_scr_v);
+        ResultHsv = (HorizontalScrollView) findViewById(R.id.top_scr_hor_sc_v);
 
+        textSize = pixelsToSp(display.getTextSize());
+
+    }
+
+    public float pixelsToSp(float px) {
+        float scaledDensity = this.getResources().getDisplayMetrics().scaledDensity;
+        return px/scaledDensity;
     }
 
     @Override
@@ -199,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.clear:
-                display.setText("");
+                setTextToTextView(display, "");
                 leftBraceCount = 0;
                 break;
 
@@ -209,14 +223,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.equal:
                String s = calculate();
-               display.setText(s);
+                setTextToTextView(display, s);
                leftBraceCount = 0;
                break;
         }
 
-        resultValue.setText("= " + calculate());
+        String resultText = "= " + calculate();
+        setTextToTextView(resultValue, resultText);
+
+        ResultHsv.post(new Runnable() {
+            public void run() {
+                ResultHsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+            }
+        });
+
+        DispHsv.post(new Runnable() {
+            public void run() {
+                DispHsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+            }
+        });
 
     }
+
+    private void setTextToTextView(TextView v, String s) { // нужно чтобы текст уменьшался при достижении границ экрана
+
+        v.setText(s);
+
+        if (s.length() >= MIDDLE_LENGTH)
+        {
+            v.setTextSize(textSize / 1.5f);
+            return;
+        }
+
+        if (s.length() < MIDDLE_LENGTH && s.length() >= SMALL_LENGTH)
+        {
+            v.setTextSize(textSize / 1.2f);
+            return;
+        }
+        if (s.length() < SMALL_LENGTH)
+        {
+            v.setTextSize(textSize);
+            return;
+        }
+    } //расчитывает на сколько нужно уменьшить текст и выводит его
 
     private String calculate() {
 
@@ -275,8 +324,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Checker checker = new Checker(leftBraceCount, s, c);
         checker.run();
-        display.setText(checker.getDisplay());
+        setTextToTextView(display, checker.getDisplay());
         leftBraceCount = checker.getLeftBraceCount();
+
     } //создает объект Checker и проверяем можем ли мы вставить тот или иной символ
 
     private void deleteLastSymbol() {
@@ -298,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             {
                 s = s.substring(0, s.length() - 1);
             }
-            display.setText(s);
+            setTextToTextView(display, s);
         }
         if (s.equals("")) leftBraceCount = 0;
     } //для бекспейса
@@ -314,7 +364,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button.setBackgroundResource(R.drawable.button);
         button.setText(s);
         button.setId(id);
-        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        int height = save.getHeight();
+
+        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height); //делаем высоту новой кнопки такой же как остальные
         layoutParams.setMargins(1,0,1,0);
         button.setTextColor(getResources().getColor(R.color.mainColor));
         scrollLay.addView(button, 0, layoutParams);
@@ -343,12 +395,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                 String s = display.getText().toString();
                 String lastSymbol = "";
+                String resultText = "= " + calculate();
 
                 if (s.length() == 0)
                 {
                     s += button.getText().toString();
-                    display.setText(s);
-                    resultValue.setText("= " + calculate());
+                    setTextToTextView(display, s);
+                    setTextToTextView(resultValue, resultText);
                     return;
                 }
 
@@ -371,8 +424,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     s += button.getText().toString();
                 }
 
-                display.setText(s);
-                resultValue.setText("= " + calculate());
+                setTextToTextView(display, s);
+                setTextToTextView(resultValue, resultText);
+
             }
         });
 
@@ -454,4 +508,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
         popupMenu.show();
     }
+
+//    @Override
+//    public boolean onTouch(View v, MotionEvent event) {
+//                event.setLocation(-1*event.getX(), event.getY());
+//                hsv.dispatchTouchEvent(event);
+//                return true;
+//    }
 }
