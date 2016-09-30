@@ -1,5 +1,6 @@
 package namax.ru.naidovichcalculator;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.PopupMenu;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int id = 0;
     LinearLayout scrollLay;
 
-    PopupMenu popupMenu; //It is for decimal places
+    PopupMenu popupMenu, displayPopupMenu; //It is for decimal places
 
     float textSize;
 
@@ -93,20 +94,70 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         scrollLay = (LinearLayout) findViewById(R.id.scrolling_layout);
 
-        popupMenu = new PopupMenu(this, round);
-        popupMenu.inflate(R.menu.menu_round);
-
         DispHsv = (HorizontalScrollView) findViewById(R.id.disp_hor_scr_v);
         ResultHsv = (HorizontalScrollView) findViewById(R.id.top_scr_hor_sc_v);
 
+        popupMenu = new PopupMenu(this, round);
+        popupMenu.inflate(R.menu.menu_round);
+
+        displayPopupMenu = new PopupMenu(this, DispHsv);
+        displayPopupMenu.inflate(R.menu.disp_pop_men);
+
+
+
         textSize = pixelsToSp(display.getTextSize());
+
+        resultValue.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                String result = resultValue.getText().toString().substring(1); // удаляем знаки = и пробел
+                setClipboard(getApplicationContext(), result);
+                Toast.makeText(getApplicationContext(), "copied to the clipboard", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
+
+        display.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                displayPopupMenu
+                        .setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+
+                            @Override
+                            public boolean onMenuItemClick(MenuItem item) {
+
+                                switch (item.getItemId()) {
+
+                                    case R.id.copy_to_clipboard:
+                                        setClipboard(getApplicationContext(), display.getText().toString());
+                                        Toast.makeText(getApplicationContext(), "copied to the clipboard", Toast.LENGTH_SHORT).show();
+                                        return false;
+
+                                    case R.id.copy_from_clipboard:
+
+                                        display.setText(getClipboard(getApplicationContext()));
+                                        return false;
+
+                                    default:
+                                        ;
+                                }
+                                return false;
+                            }
+                        });
+                displayPopupMenu.show();
+
+                return false;
+            }
+        });
+
 
     }
 
     public float pixelsToSp(float px) {
         float scaledDensity = this.getResources().getDisplayMetrics().scaledDensity;
         return px/scaledDensity;
-    }
+    } // взял со StackOverFlow, нужно для получения размера текста, чтобы потом его уменьшать
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -243,7 +294,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-    }
+    } //обработчик нажатий постоянных кнопок, в конце реализована автопрокрутка HorizontalScrollView
 
     private void setTextToTextView(TextView v, String s) { // нужно чтобы текст уменьшался при достижении границ экрана
 
@@ -509,10 +560,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         popupMenu.show();
     }
 
-//    @Override
-//    public boolean onTouch(View v, MotionEvent event) {
-//                event.setLocation(-1*event.getX(), event.getY());
-//                hsv.dispatchTouchEvent(event);
-//                return true;
-//    }
+    private void setClipboard(Context context, String text) {
+        if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText(text);
+        } else {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", text);
+            clipboard.setPrimaryClip(clip);
+        }
+    }
+
+    private String getClipboard(Context context) {
+
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            return clipboard.getText().toString();
+    }
+
+
 }
