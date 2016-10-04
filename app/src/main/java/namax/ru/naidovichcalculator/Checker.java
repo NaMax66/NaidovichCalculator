@@ -12,6 +12,7 @@ public class Checker {
     private int leftBraceCount = 0;
     private String display;
     char symbol;
+    String lastSymbol;
 
     public Checker(int leftBraceCount, String display, char symbol) {
         this.leftBraceCount = leftBraceCount;
@@ -27,73 +28,308 @@ public class Checker {
         return display;
     }
 
-    public void run()
+    public void check() //всего 9 возможных ситуций, здесь описано - что произойдет, если перед текущим символом стоит тот или иной символ, включая  его самого
     {
-        if (display.matches("(?i).*[a-z].*")) // I find it RE in http://www.cyberforum.ru/java-j2se/thread1003818.html
+        if (display.length() == 0) lastSymbol = "";
+        else
         {
-            display = "";
-            leftBraceCount = 0;
+            lastSymbol = display.substring(display.length() - 1);  //если на дисплее ничего нет, пусть последним символом будет пустым, если есть - получаем последний символ
+            isLastSymbolNumber();
         }
-        String symbolString = "";
-              symbolString += symbol;
-        if (display.length() == 0 && symbolString.matches("[0-9]"))
+
+        switch (symbol)
         {
-            display += symbol;
-            return;
+            case '+':
+                checkAndAddPlus();
+                break;
+
+            case '-':
+                checkAndAddMinus();
+                break;
+
+            case '*':
+                checkAndAddMultiply();
+                break;
+
+            case '/':
+                checkAndAddDivision();
+                break;
+
+            case '.':
+                checkAndAddPoint();
+                break;
+
+            case '(':
+                checkAndAddLeftBrace();
+                break;
+
+            case  ')':
+                checkAndAddRightBrace();
+                break;
         }
-        if (symbol == '(' )
+
+        String s = "" + symbol;
+        if (s.matches("[0-9]")) //если символ число и стоит правая скобка - добавляем знак умножения
         {
-            checkAndAddLeftBrace(symbol);
+            if (lastSymbol.equals(")")) display += "*" + symbol;
+            else display += symbol;
         }
-        else if (symbol == ')' )
+
+    }
+
+    private void checkAndAddPoint() {
+
+        switch (lastSymbol)
         {
-            checkAndAddRightBrace(symbol);
+            case "":
+                display += "0.";
+                break;
+
+            case "number":
+
+                String s = getLastNumber();
+                if (!s.contains("."))
+                    display += ".";
+                break;
         }
-        else if (symbolString.matches("[0-9]"))
-            display += symbol;
-        else if (symbolString.equals("."))
+
+    }
+
+    private void checkAndAddDivision() {
+
+        switch (lastSymbol)
         {
-            pointMethod();
+            case ".":
+                deleteLastSymbol();
+                display += '/';
+                break;
+
+            case "number":
+                display += '/';
+                break;
+
+            case ")":
+                display += '/';
+                break;
         }
-        else {
-            checkIfContainBrace();
-            checkAndAddSymbol(symbol);
+
+    }
+
+    private void checkAndAddMultiply() {
+        switch (lastSymbol)
+        {
+            case ".":
+                deleteLastSymbol();
+                display += '*';
+                break;
+
+            case "number":
+                display += '*';
+                break;
+
+            case ")":
+                display += '*';
+                break;
         }
     }
 
-    private void pointMethod() {
+    private void checkAndAddMinus() {
 
-        if (display.length() == 0)
+        switch (lastSymbol)
         {
-            display += "0.";
+            case "":
+                display += '-';
+                break;
+
+            case "+":
+                deleteLastSymbol();
+                display += '-';
+                break;
+
+            case "-":
+                deleteLastSymbol();
+                display += '+';
+                break;
+
+            case "*":
+                display += "(-";
+                leftBraceCount++;
+                break;
+
+            case "/":
+                display += "(-";
+                leftBraceCount++;
+                break;
+
+            case ".":
+                deleteLastSymbol();
+                display += '-';
+                break;
+
+            case "number":
+                display += '-';
+                break;
+
+            case "(":
+                display += '-';
+                break;
+
+            case ")":
+                display += '-';
+                break;
+        }
+    }
+
+    private void isLastSymbolNumber() {
+        if (lastSymbol.matches("[0-9]"))
+
+            lastSymbol = "number";
+    }
+
+    private void checkAndAddPlus() {
+
+        switch (lastSymbol)
+        {
+            case "":
+                break;
+
+            case "+":
+                break;
+
+            case "-":
+                deleteLastSymbol();
+                display += '+';
+                break;
+
+            case "*":
+                break;
+
+            case "/":
+                break;
+
+            case ".":
+                deleteLastSymbol();
+                display += '+';
+                break;
+
+            case "number":
+                display += '+';
+                break;
+
+            case "(":
+                break;
+
+            case ")":
+                display += '+';
+                break;
+
+        }
+
+    }
+
+    private void checkAndAddLeftBrace() {
+
+        switch (lastSymbol)
+        {
+            case "":
+                display += '(';
+                break;
+
+            case "+":
+                display += '(';
+                break;
+
+            case "-":
+                display += '(';
+                break;
+
+            case "*":
+                display += "(";
+                break;
+
+            case "/":
+                display += "(";
+                break;
+
+            case ".":
+                deleteLastSymbol();
+                display += "*(";
+                break;
+
+            case "number":
+                display += "*(";
+                break;
+
+            case "(":
+                display += '(';
+                break;
+
+            case ")":
+                display += "*(";
+                break;
+
+        }
+
+        leftBraceCount++;
+
+    }
+
+    private void checkAndAddRightBrace() {         // )
+
+        if (leftBraceCount == 0)
+        {
             return;
         }
 
-        String lastSymbol = display.substring(display.length() - 1);
-        if (lastSymbol.contains(".")) return;
-        else if (lastSymbol.matches("[0-9]"))
+        switch (lastSymbol)
         {
-            if (display.contains("*") || display.contains("/") || display.contains("-") || display.contains("+"))
-            {
+            case ".":
+                deleteLastSymbol();
+                display += ')';
+                leftBraceCount--;
+                break;
+
+            case "number":
+                display += ')';
+                leftBraceCount--;
+                break;
+
+            case ")":
+                display += ')';
+                leftBraceCount--;
+                break;
+        }
+
+
+    }
+
+    private void deleteLastSymbol() {
+
+        if(!display.equals(""))
+            display = display.substring(0, display.length() - 1);
+
+    }
+
+    private String getLastNumber()
+    {
+        String lastNumber = "";
+
+            if (display.contains("*") || display.contains("/") || display.contains("-") || display.contains("+")) {
                 int lastMultiplyIndex = 0;
                 int lastDivIndex = 0;
                 int lastSubIndex = 0;
                 int lastAddIndex = 0;
 
-                if (display.contains("*"))
-                {
+                if (display.contains("*")) {
                     lastMultiplyIndex = display.lastIndexOf("*");
                 }
-                if (display.contains("/"))
-                {
+                if (display.contains("/")) {
                     lastDivIndex = display.lastIndexOf("/");
                 }
-                if (display.contains("-"))
-                {
+                if (display.contains("-")) {
                     lastSubIndex = display.lastIndexOf("-");
                 }
-                if (display.contains("+"))
-                {
+                if (display.contains("+")) {
                     lastAddIndex = display.lastIndexOf("+");
                 }
 
@@ -105,113 +341,12 @@ public class Checker {
 
                 int lastOperatorIndex = 0;
 
-                for (Integer i : list)
-                {
+                for (Integer i : list) {
                     if (i >= lastOperatorIndex) lastOperatorIndex = i;
                 }
-
-                String lastNumber = display.substring(lastOperatorIndex);
-                if (lastNumber.contains(".")) return;
-                else display += ".";
-            }
-            else if (display.contains(".")) return;
-            else display += ".";
-
-        }
-        else return;
-
-    }
-
-
-    private void checkAndAddLeftBrace(char c) {
-
-        if (display.length() == 0)
-        {
-            display += c;
-            leftBraceCount++;
-        }
-
-        else
-        {
-            String lastSymbol = display.substring(display.length() - 1);
-            if (lastSymbol.equals(")") || lastSymbol.matches("[0-9]"))
-            {
-                display += "*";
-                display += c;
-                leftBraceCount++;
-            }
-            else if (lastSymbol.equals("."))
-            {
-                display += "0*";
-                display += c;
-                leftBraceCount++;
-            }
-            else
-            {
-                display += c;
-                leftBraceCount++;
+                lastNumber = display.substring(lastOperatorIndex);
             }
 
-        }
-
-    }
-
-    private void checkAndAddRightBrace(char c) {         // )
-
-        if (leftBraceCount == 0) return;
-        String lastSymbol = display.substring(display.length() - 1);
-        if (lastSymbol.equals("(")) return;
-        if (lastSymbol.equals("."))
-        {
-            deleteLastSymbol();
-            display += c;
-            leftBraceCount--;
-        }
-        else
-        {
-            display += c;
-            leftBraceCount--;
-        }
-
-    }
-
-    private void checkIfContainBrace() {
-
-        if (display.length() <= 1) return;
-        String lastSymbols = display.substring(display.length() - 2);
-        if (lastSymbols.equals("*("))
-        {
-            deleteLastSymbol();
-            deleteLastSymbol();
-        }
-
-    }
-
-    private void checkAndAddSymbol(char c){
-
-        if (display.length() == 0) return;
-
-        if(
-                (display.charAt(display.length() - 1) == '+') ||
-                        (display.charAt(display.length() - 1) == '*') ||
-                        (display.charAt(display.length() - 1) == '/') ||
-                        (display.charAt(display.length() - 1) == '-') ||
-                        (display.charAt(display.length() - 1) == '.') ||
-                        (display.charAt(display.length() - 1) == '(')
-                )
-        {
-            deleteLastSymbol();
-            display = display + c;
-        }
-
-        else display = display + c;
-
-    }
-
-    private void deleteLastSymbol() {
-
-        if(!display.equals(""))
-            display = display.substring(0, display.length() - 1);
-
+      return lastNumber;
     }
 }

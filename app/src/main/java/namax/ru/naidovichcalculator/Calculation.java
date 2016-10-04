@@ -1,6 +1,7 @@
 package namax.ru.naidovichcalculator;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Created by User on 016 16.08.16.
@@ -10,14 +11,19 @@ public class Calculation {
     private BigDecimal iX ,iY ,iZ;
     private char cop1, cop2;
     private short iOperationCount = 0;
-    private static int iC = 0;
+    private int iC = 0;
     private int round;
 
     Calculation(int round) {
         this.round = round;
     }
 
-    public BigDecimal calc(String s) throws Exception
+    public BigDecimal getResult(String s) throws Exception
+    {
+        return calc(s).setScale(round, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal calc(String s) throws Exception
     {
 
         char cThis;
@@ -45,7 +51,9 @@ public class Calculation {
                 Calculation calcObj = new Calculation(round);
                 BigDecimal solution = calcObj.calc(s.substring(i + 1));
                 PlaceNum(solution);
-                i=i+iC+1;
+                i=i+calcObj.iC+1; //всё соб
+
+
             }
             if (cThis == ')')
             {

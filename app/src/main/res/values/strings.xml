@@ -1,8 +1,8 @@
 <resources>
-    <string name="app_name">NaidovichCalculator</string>
-    <string name="app_name_slogan">SUPER CALCULATOR</string>
+    <string name="app_name">SAVE Calculator</string>
+    <!--<string name="app_name_slogan">SUPER CALCULATOR</string>-->
     <string name="add">+</string>
-    <string name="equal">=</string>
+    <string name="equal">= </string>
     <string name="zero">0</string>
     <string name="clear">C</string>
     <string name="sub">-</string>
@@ -18,22 +18,21 @@
     <string name="eight">8</string>
     <string name="seven">7</string>
     <string name="display"></string>
-    <string name="Backspace"><![CDATA[<---]]></string>
-    <string name="divisionZero">Division by ZERO</string>
     <string name="Save">Save</string>
     <string name="tip">Tap save</string>
     <string name="clearList">C list</string>
     <string name="round">round</string>
     <string name="left_brace">(</string>
     <string name="right_brace">)</string>
-    <string name="something_wrong">something is wrong</string>
-    <string name="action_clearList">Clear button\'s list</string>
-    <string name="action_round">Decimal places</string>
+    <string name="action_clearList">clear button\'s list</string>
+    <string name="action_round">decimal places</string>
     <string name="root">√x</string>
     <string name="square">x²</string>
     <string name="percentage">%</string>
-    <string name="about">About app</string>
-    <string name="remove">Remove ads</string>
+    <string name="about">about app</string>
     <string name="copy_to_clipboard">copy</string>
     <string name="copy_from_clipboard">paste</string>
+    <string name="mail">mail me</string>
+    <string name="b_effects">button effects</string>
+    <string name="quit">quit</string>
 </resources>

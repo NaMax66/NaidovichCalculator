@@ -17,6 +17,9 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     HorizontalScrollView DispHsv, ResultHsv;
@@ -26,9 +29,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     static int MIDDLE_LENGTH = 22;
 
     TextView resultValue, tip, display;
-    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, save, leftBrace, rightBrace, round, equal;
+    Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, save, leftBrace, rightBrace, equal, root, square, percentage;
     RelativeLayout backspace;
-    int numOfDig = 5;       //the number of digits after point
+    int numOfDig = 5;//the number of digits after point
+
+
+    public void setLeftBraceCount(int leftBraceCount) {
+        this.leftBraceCount = leftBraceCount;
+    }
     private int leftBraceCount = 0;
     int id = 0;
     LinearLayout scrollLay;
@@ -58,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         div = (Button) findViewById(R.id.div);
         leftBrace = (Button) findViewById(R.id.left_brace);
         rightBrace = (Button) findViewById(R.id.right_brace);
+        root = (Button) findViewById(R.id.root);
+        square = (Button) findViewById(R.id.square);
+        percentage = (Button) findViewById(R.id.percentage);
 
         clear = (Button) findViewById(R.id.clear);
 
@@ -91,13 +102,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         save.setOnClickListener(this);
         clear.setOnClickListener(this);
         equal.setOnClickListener(this);
+        root.setOnClickListener(this);
+        square.setOnClickListener(this);
+        percentage.setOnClickListener(this);
 
         scrollLay = (LinearLayout) findViewById(R.id.scrolling_layout);
 
         DispHsv = (HorizontalScrollView) findViewById(R.id.disp_hor_scr_v);
         ResultHsv = (HorizontalScrollView) findViewById(R.id.top_scr_hor_sc_v);
 
-        popupMenu = new PopupMenu(this, round);
+        popupMenu = new PopupMenu(this, save);
         popupMenu.inflate(R.menu.menu_round);
 
         displayPopupMenu = new PopupMenu(this, DispHsv);
@@ -171,20 +185,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_clearList) {
-            Toast.makeText(this, "clear List is pressed", Toast.LENGTH_SHORT).show();
-        }
-
-        if (id == R.id.action_round)
+        switch (item.getItemId())
         {
-            Toast.makeText(this, "round is pressed", Toast.LENGTH_SHORT).show();
-        }
+            case R.id.action_clearList:
+                scrollLay.removeAllViews();
+                id = 0;
+                scrollLay.addView(tip);
+                break;
 
+            case R.id.action_round:
+                setDecimalPlaces();
+                break;
+
+            case R.id.b_effects:
+                break;
+
+            case R.id.mail:
+                break;
+
+            case R.id.about:
+                break;
+
+            case R.id.quit:
+                finish();
+                break;
+        }
         return super.onOptionsItemSelected(item);
-    } //выводим сообщения о событиях
+    } //обработчик нажатий на пункты меню, нужно доделать!
 
     @Override
     public void onClick(View v) {
@@ -273,13 +301,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.equal:
-               String s = calculate();
+               String s = calculate(display.getText().toString());
                 setTextToTextView(display, s);
                leftBraceCount = 0;
                break;
+
+            case R.id.root:
+                findAndSetRoot();
+                break;
+
+            case R.id.square:
+                findAndSetSquare();
+                break;
+
+            case R.id.percentage:
+                findAndSetPercentage();
+                break;
         }
 
-        String resultText = "= " + calculate();
+        String resultText = "= " + calculate(display.getText().toString());
         setTextToTextView(resultValue, resultText);
 
         ResultHsv.post(new Runnable() {
@@ -295,6 +335,116 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
     } //обработчик нажатий постоянных кнопок, в конце реализована автопрокрутка HorizontalScrollView
+
+    private void findAndSetSquare() {
+        String dispValue = calculate(display.getText().toString());
+        String resValue;
+        try {
+            BigDecimal n = new BigDecimal(dispValue);
+            n = n.multiply(n);
+            n = n.setScale(numOfDig, RoundingMode.HALF_UP);
+            resValue = n.toString();
+            setTextToTextView(display, resValue);
+
+        }catch (Exception e)
+        {
+
+        }
+
+    }
+
+    private void findAndSetRoot() {
+        String dispValue = calculate(display.getText().toString());
+        String resValue;
+        try {
+            BigDecimal n = new BigDecimal(dispValue);
+            n = new BigDecimal(Math.sqrt(n.doubleValue()));
+            n = n.setScale(numOfDig, RoundingMode.HALF_UP);
+            resValue = n.toString();
+            setTextToTextView(display, resValue);
+
+        }catch (Exception e)
+        {
+
+        }
+    }
+
+    private void findAndSetPercentage() {                                           //2+2*2-2*(2.2/2)+2%  //%2+)2/2.2(*2-2*2+2            нужно просмотерть цифры, найти среди них последнее число, затем обрезать его
+                                                                                    //до ближайшего следующего числа, полученное выражение вычислить и затем умножить на последнее выражение и разделить на 100
+        String expression = display.getText().toString();
+        if (expression.length() == 0) return;
+        String lastSymbol = expression.substring(expression.length() - 1);
+        if (!lastSymbol.matches("[0-9]")) return;
+        String lastNumber = "";
+        String resultExpression = "";
+        BigDecimal lastNumberBD; //иниц на всякий случай
+        BigDecimal expressionValueAfterDel;
+
+
+
+        char[] chars = expression.toCharArray();
+
+        for (int i = chars.length-1; i >= 0; i--) {
+
+            String c = String.valueOf(chars[i]);
+
+            if (c.matches("[0-9]") || c.equals(".")) lastNumber += c;
+            else break;
+        } //теперь у нас должно быть последнее число
+
+            lastNumber = new StringBuilder(lastNumber).reverse().toString();
+
+            lastNumberBD = new BigDecimal(lastNumber);          //досюда все ок
+
+        if (expression.length() == lastNumber.length()) // если длины равны, значит других чисел на экране нет
+        {
+            try {
+                BigDecimal n = new BigDecimal(lastNumber);
+                resultExpression = n.divide(new BigDecimal(100), numOfDig, RoundingMode.HALF_UP).toString();
+            }
+            catch (Exception e)
+            {
+
+            }
+
+        }
+        else
+        {
+            try {
+
+                int index = expression.length() - lastNumber.length()-1; //
+
+                expression = expression.substring(0, index); // обрезаем проценты
+                char[] expChars = expression.toCharArray();
+
+                for (int i= index; i >= 0; i--) {
+                    String c = String.valueOf(expChars[i]);
+                    if (!c.matches("[0-9]") || !c.equals(".")) expression = expression.substring(0, expression.length() - 1);
+                    else break;
+                } // здесь получили выражение без последнего числа и прочих символов в конце
+            }
+            catch (Exception e)
+            {
+
+            }
+            if (expression.equals("")) return;
+            else
+            {
+                String s = calculate(expression);
+                int newBraceIndex = expression.length();
+                expressionValueAfterDel = new BigDecimal(s);
+
+                String valueInPercent = expressionValueAfterDel.multiply(lastNumberBD).divide(new BigDecimal(100), numOfDig, BigDecimal.ROUND_UP).toString(); //умножаем на значение в конце и делим на 100
+                String disp = display.getText().toString();
+                disp = disp.substring(0, disp.length() - lastNumber.length());
+                resultExpression = "(" + disp.substring(0, newBraceIndex) + ")" + disp.substring(newBraceIndex);
+                resultExpression += valueInPercent;
+            }
+
+        }//нужно получить выражение без последнего числа и цифр на конце
+
+        setTextToTextView(display , removeExtraZeros(resultExpression));
+    }
 
     private void setTextToTextView(TextView v, String s) { // нужно чтобы текст уменьшался при достижении границ экрана
 
@@ -318,27 +468,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     } //расчитывает на сколько нужно уменьшить текст и выводит его
 
-    private String calculate() {
+    private String calculate(String expression) {
 
         Calculation calculation = new Calculation(numOfDig);
-        String resultText = display.getText().toString();
+
 
         if (leftBraceCount != 0) //чтобы вычисления проходили корректно объекту типа Calculation нужно одинаковое колличество левых и правых скобок
         {
             for (int i = 0; i < leftBraceCount; i++)
             {
-                resultText += ")";
+                expression += ")";
             }
         }
 
         String s = "";
         try {
-            s = (calculation.calc(resultText).toString()); // вычисляем и складываем в s
+            s = (calculation.getResult(expression).toString()); // вычисляем и складываем в s
         }
         catch (Exception e)
         {
             //если не получилось - ничего не делаем
         }
+
+        return removeExtraZeros(s);
+    } //здесь происходит вычисление, на основе великого объекта Calculation by Tolya
+
+    private String removeExtraZeros(String s) {
 
         if (!s.equals(""))
         {
@@ -346,7 +501,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (s.contains("."))
             {
                 if (lastSymbol.equals("0")) {
-
 
                     do {
                         s = s.substring(0, s.length() - 1);
@@ -356,11 +510,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             if (lastSymbol.equals(".")) s = s.substring(0, s.length() - 1);
-
         }
-
         return s;
-    } //здесь происходит вычисление, на основе великого объекта Calculation by Tolya
+    }
 
     private void setDecimalPlaces() {
 
@@ -370,11 +522,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void checkAndAdd(CharSequence a) {
         String s = display.getText().toString();
-
         char c = a.charAt(0);
-
         Checker checker = new Checker(leftBraceCount, s, c);
-        checker.run();
+        checker.check();
         setTextToTextView(display, checker.getDisplay());
         leftBraceCount = checker.getLeftBraceCount();
 
@@ -406,12 +556,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void createNewButton() {
 
-        if  (display.getText().toString().equals("")) return;
+        String s = resultValue.getText().toString();
 
+        if (s.length() >= 2) s = s.substring(2); // убираем = и пробел
+        if (s.equals(""))
+        {
+            Toast.makeText(getApplicationContext(),
+                    "Make some calculation and try again",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
         Button button = new Button(this);
-        String s = calculate();
-        String lastSymbol = s.substring(s.length() - 1);
-        if (!lastSymbol.matches("[0-9]")) return;
+
         button.setBackgroundResource(R.drawable.button);
         button.setText(s);
         button.setId(id);
@@ -426,7 +582,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         if (id == 0) {
 
-            tip.setVisibility(View.GONE);       //скрываем надпись в спике кнопок
+           scrollLay.removeView(tip);       //удаляем надпись в спике кнопок
             id++;
         }
         else {
@@ -445,38 +601,44 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View v) {
 
                 String s = display.getText().toString();
-                String lastSymbol = "";
-                String resultText = "= " + calculate();
+                String buttonsText = button.getText().toString();
 
-                if (s.length() == 0)
-                {
-                    s += button.getText().toString();
+                if (s.length() == 0) {
+                    s += buttonsText;
                     setTextToTextView(display, s);
-                    setTextToTextView(resultValue, resultText);
                     return;
                 }
 
-                else
+                String lastSymbol = s.substring(s.length() - 1);
 
-                    lastSymbol = s.substring(s.length() - 1);
-
-                if (lastSymbol.matches("[0-9]")) {
-                    s += "+" + button.getText().toString();
-                }
-
-                else if (lastSymbol.equals(".")) {
-
-                    s = s.substring(0, s.length() - 1);
-                    s += "+" + button.getText().toString();
-                }
-
-                else
+                if (lastSymbol.equals("."))
                 {
-                    s += button.getText().toString();
+                    deleteLastSymbol();
+                    s += '+' + buttonsText;
                 }
+                else if (lastSymbol.equals(")"))
+                {
+                    s += "*" + buttonsText;
+                }
+                else if (lastSymbol.matches("[0-9]"))
+                {
+                    s += "+" + buttonsText;
+                }
+                else s += buttonsText;
 
                 setTextToTextView(display, s);
-                setTextToTextView(resultValue, resultText);
+                setTextToTextView(resultValue, "= " + calculate(display.getText().toString()));
+                ResultHsv.post(new Runnable() {
+                    public void run() {
+                        ResultHsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+                    }
+                });
+
+                DispHsv.post(new Runnable() {
+                    public void run() {
+                        DispHsv.fullScroll(HorizontalScrollView.FOCUS_RIGHT);
+                    }
+                });
 
             }
         });
@@ -497,6 +659,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         {
             scrollLay.removeView(scrollLay.findViewById(DELETE_BUTTON));
         }
+
+        if(scrollLay.getChildCount() == 0)
+        {
+            scrollLay.addView(tip);
+        }
+
         return super.onContextItemSelected(item);
     } //здесь удаляем элемент из списка кнопок
 
@@ -546,9 +714,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                             case R.id.menuUnlimdecP:
                                 item.setChecked(!item.isChecked());
-                                numOfDig = 100;
+                                numOfDig = 30;
                                 Toast.makeText(getApplicationContext(),
-                                        "You choose 100 decimal places",
+                                        "You choose 30 decimal places",
                                         Toast.LENGTH_SHORT).show();
                                 break;
                             default:
@@ -569,13 +737,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", text);
             clipboard.setPrimaryClip(clip);
         }
-    }
+    } //копируем в буфер
 
     private String getClipboard(Context context) {
 
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
             return clipboard.getText().toString();
-    }
+    } // берем из буфера
 
 
 }
