@@ -1,14 +1,20 @@
 package namax.ru.naidovichcalculator;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.PopupMenu;
+import android.text.Layout;
+import android.util.AttributeSet;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
@@ -24,32 +30,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     HorizontalScrollView DispHsv, ResultHsv;
 
+    String buttonsValues = "";
+
     static int DELETE_BUTTON = 0;
     static int SMALL_LENGTH = 15;
     static int MIDDLE_LENGTH = 22;
+    boolean effects = true;
+    Vibrator vibrator;
+
+    SharedPreferences sPref;
 
     TextView resultValue, tip, display;
     Button one, two, three, four, five, six, seven, eight, nine, zero, add, sub, mul, div, dot, clear, save, leftBrace, rightBrace, equal, root, square, percentage;
     RelativeLayout backspace;
     int numOfDig = 5;//the number of digits after point
 
-
-    public void setLeftBraceCount(int leftBraceCount) {
-        this.leftBraceCount = leftBraceCount;
-    }
     private int leftBraceCount = 0;
     int id = 0;
     LinearLayout scrollLay;
 
     PopupMenu popupMenu, displayPopupMenu; //It is for decimal places
 
+
     float textSize;
+
+    int buttonsHeight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        vibrator = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE); //находим вибратор для кнопочек
+
         setContentView(R.layout.activity_main);
         one = (Button) findViewById(R.id.one);
+
+
         two = (Button) findViewById(R.id.two);
         three = (Button) findViewById(R.id.three);
         four = (Button) findViewById(R.id.four);
@@ -160,11 +177,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
                 displayPopupMenu.show();
-
+                 //загружаем список кнопок
                 return false;
             }
         });
 
+        CountDownTimer timer = new CountDownTimer(100, 100) { //таймер нужен для получения высоты кнопки, которая не успевает появиться без него
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+            }
+            @Override
+            public void onFinish() {
+
+                    buttonsHeight = save.getHeight();
+                if(buttonsHeight != 0)
+                {
+                    loadButtonsList();
+                }
+                else start();
+
+            }
+        };
+
+        timer.start();
+
+
+    }
+
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
     }
 
@@ -216,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        playButtonsEffects(v);
         switch (v.getId())
         {
             case R.id.one:
@@ -297,7 +343,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.save:
-                createNewButton();
+                String resV = resultValue.getText().toString();
+                if (resV.length() >= 2) resV = resV.substring(2); // убираем = и пробел
+                if (resV.equals(""))
+                {
+                    Toast.makeText(getApplicationContext(),
+                            "Make some calculation and try again",
+                            Toast.LENGTH_LONG).show();
+                    break;
+                }
+                createNewButton(resV);
                 break;
 
             case R.id.equal:
@@ -319,6 +374,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
 
+
+
+
+
+
         String resultText = "= " + calculate(display.getText().toString());
         setTextToTextView(resultValue, resultText);
 
@@ -335,6 +395,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
 
     } //обработчик нажатий постоянных кнопок, в конце реализована автопрокрутка HorizontalScrollView
+
+    private void playButtonsEffects(View v) {
+        if (effects)
+        {
+            if (vibrator.hasVibrator())
+            {
+                vibrator.vibrate(30);
+            }
+
+        }
+    }
 
     private void findAndSetSquare() {
         String dispValue = calculate(display.getText().toString());
@@ -369,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void findAndSetPercentage() {                                           //2+2*2-2*(2.2/2)+2%  //%2+)2/2.2(*2-2*2+2            нужно просмотерть цифры, найти среди них последнее число, затем обрезать его
+    private void findAndSetPercentage() {                                           // нужно просмотерть цифры, найти среди них последнее число, затем обрезать его
                                                                                     //до ближайшего следующего числа, полученное выражение вычислить и затем умножить на последнее выражение и разделить на 100
         String expression = display.getText().toString();
         if (expression.length() == 0) return;
@@ -431,6 +502,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             else
             {
                 String s = calculate(expression);
+                if (s.equals("")) return; // процент не считается если выражение на удалось вычислить (возоможно из-за символса скобки в конце)
                 int newBraceIndex = expression.length();
                 expressionValueAfterDel = new BigDecimal(s);
 
@@ -554,26 +626,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (s.equals("")) leftBraceCount = 0;
     } //для бекспейса
 
-    private void createNewButton() {
+    private void createNewButton(String s) {
 
-        String s = resultValue.getText().toString();
-
-        if (s.length() >= 2) s = s.substring(2); // убираем = и пробел
-        if (s.equals(""))
-        {
-            Toast.makeText(getApplicationContext(),
-                    "Make some calculation and try again",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
         Button button = new Button(this);
 
         button.setBackgroundResource(R.drawable.button);
         button.setText(s);
         button.setId(id);
-        int height = save.getHeight();
+//        int height = save.getHeight();
 
-        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, height); //делаем высоту новой кнопки такой же как остальные
+        TableLayout.LayoutParams layoutParams = new TableLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, buttonsHeight); //делаем высоту новой кнопки такой же как остальные
         layoutParams.setMargins(1,0,1,0);
         button.setTextColor(getResources().getColor(R.color.mainColor));
         scrollLay.addView(button, 0, layoutParams);
@@ -625,6 +687,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     s += "+" + buttonsText;
                 }
                 else s += buttonsText;
+
+                playButtonsEffects(v);
 
                 setTextToTextView(display, s);
                 setTextToTextView(resultValue, "= " + calculate(display.getText().toString()));
@@ -745,5 +809,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return clipboard.getText().toString();
     } // берем из буфера
 
+    private void saveButtonsList(){
 
+        Button v;
+        buttonsValues = "";
+        String s = "";
+        if (id == 0) return; //если id = 0 значит кнопок в списке небыло
+
+        for (int i = 0; i <= id; i++) { // бывает что кнопки нет, а id есть
+            try {
+                v = (Button) scrollLay.findViewById(i);
+                s = v.getText().toString();
+                buttonsValues += s + " ";
+            }
+            catch (Exception e)
+            {
+
+            }
+
+        }
+        sPref = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor ed = sPref.edit();
+        ed.putString("buttons", buttonsValues);
+        ed.apply();
+    }
+    private void loadButtonsList(){
+
+        sPref = getPreferences(MODE_PRIVATE);
+        buttonsValues = sPref.getString("buttons", "");
+        if (buttonsValues.equals("")) return;
+        String [] bValues = buttonsValues.split(" ");
+        for (String s : bValues)
+        {
+            createNewButton(s);
+        }
+
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        saveButtonsList();
+        super.onDestroy();
+
+    }
 }
